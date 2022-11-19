@@ -1,6 +1,3 @@
-// des-decrypt.cpp : Diese Datei enthält die Funktion "main". Hier beginnt und endet die Ausführung des Programms.
-//
-
 #include <stdio.h>
 #include <time.h>
 
