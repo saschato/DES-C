@@ -125,6 +125,8 @@ int permuted_choice_2[] = {
 
 int right_shifts[] = { 0,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1 };
 
+int left_shifts[] = { 1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1 };
+
 // works
 unsigned long long int initial_permuation(unsigned long long int plain) {
     unsigned long long int result = 0;
@@ -221,6 +223,22 @@ unsigned long long int key_permuted_choice_1(unsigned long long int key) {
 }
 
 // works
+unsigned int leftshift(unsigned int key, int round) {
+    unsigned int temp = 0;
+
+    if (left_shifts[round] == 2) {
+        temp |= ((key << left_shifts[round]) & 0xFFFFFFC);
+        temp |= key >> 26;
+    }
+    else {
+        temp |= ((key << left_shifts[round]) & 0xFFFFFFE);
+        temp |= key >> 27;
+    }
+
+    return temp;
+}
+
+// works
 unsigned long int rightshift(unsigned int site, int round) {
     unsigned int temp = 0;
 
@@ -251,6 +269,21 @@ void key_permuted_choice_2(unsigned long long int* array, unsigned long long int
 }
 
 // works
+void encryption_key_schedule(unsigned long long int key) {
+    unsigned long long int permuted_key = key_permuted_choice_1(key);
+
+    unsigned int left = 0 | permuted_key >> 28;
+    unsigned int right = 0 | (permuted_key & 0xFFFFFFF);
+
+    unsigned long long int result = 0;
+    for (int i = 0; i < 16; i++) {
+        left = leftshift(left, i);
+        right = leftshift(right, i);
+        key_permuted_choice_2(keys, left, right, i);
+    }
+}
+
+// works
 void decryption_key_schedule(unsigned long long int key) {
     unsigned long long int permuted_key = key_permuted_choice_1(key);
 
@@ -266,9 +299,35 @@ void decryption_key_schedule(unsigned long long int key) {
 }
 
 // works
+void encrypt() {
+    unsigned long long int plain = ; // add 64 bit plaintext
+    unsigned long long int key = ; // add 64 bit key
+
+    // generates roundkeys
+    encryption_key_schedule(key);
+
+    // initial permutation
+    plain = initial_permuation(plain);
+
+    // splitting into halfes
+    unsigned int left_site = plain >> 32;
+    unsigned int right_site = plain;
+
+    for (int i = 0; i < 16; i++) {
+        unsigned int temp_right_site = f_function(right_site, i);
+        unsigned int temp_left_site = left_site ^ temp_right_site;
+
+        left_site = right_site;
+        right_site = temp_left_site;
+    }
+
+    printf("%llu\n", final_permutation(left_site, right_site));
+}
+
+// works
 void decrypt() {
-    unsigned long long int encrypted = ; // add encrypted 64bit
-    unsigned long long int key = 0xE3FCEE67178D288C; // add key 64bit
+    unsigned long long int encrypted = ; // add 64 bit encrypted
+    unsigned long long int key = ; // add 64 bit key
 
     decryption_key_schedule(key);
 
@@ -289,6 +348,7 @@ void decrypt() {
 }
 
 int main() {
-    decrypt();
+    encrypt(); // whatever you want
+    decrypt(); // whatever you want
     return 0;
 }
